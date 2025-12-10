@@ -234,26 +234,23 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
 
         String requestIdStatus = checkRequestIdStatus(requestId);
 
-        if (requestIdStatus.equals("VP_SUBMITTED")) {
-
-            String transactionIdStatus = checkTransactionIdStatus(transactionId);
-
-            if(transactionIdStatus.equals("VALID")){
-
-                response.put("valid", true);
-                response.put("message", "Verification successful");
-
-            }else{
-                response.put("valid", false);
-                response.put("message", "Error: Transaction id is INVALID");  
-                return response;              
-            }
-
-        }else{
+        if (!"VP_SUBMITTED".equals(requestIdStatus)) {
             response.put("valid", false);
             response.put("message", "Error: Request id is EXPIRED");
             return response;
         }
+
+        String transactionIdStatus = checkTransactionIdStatus(transactionId);
+
+        if (!"VALID".equals(transactionIdStatus)) {
+            response.put("valid", false);
+            response.put("message", "Error: Transaction id is INVALID");
+            return response;
+        }
+
+        response.put("valid", true);
+        response.put("message", "Verification successful");
+        return response;
 
     }
     
