@@ -57,6 +57,8 @@ import org.gluu.agama.inji.AgamaInjiVerificationService;
 public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationService{
 
     private String INJI_API_ENDPOINT = "http://mmrraju-comic-pup.gluu.info/backend/consent/new"; // Actual INJI Backend URL
+    private String INJI_BACKEND_BASE_URL = "http://mmrraju-comic-pup.gluu.info";
+    private String INJI_RFAC_BASE_URL = "";
     private String  CLIENT_ID;
     public static String CALLBACK_URL= "https://mmrraju-promoted-macaque.gluu.info/jans-auth/fl/callback"; // Agama call-back URL
     private String RFAC_DEMO_BASE = "https://mmrraju-adapted-crab.gluu.info/rfac-demo.html"; // INJI RP URL.
@@ -100,10 +102,11 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
                                 "ReadAccountsBasic",
                                 "ReadBalances"
                         ));
+            authRequest.put("expires_in", 3600);
 
             String jsonPayload = new ObjectMapper().writeValueAsString(authRequest);
 
-            // String endpoint = "https://your-inji-verify-service/verifyServiceURL/vp-request";
+            // String endpoint = this.INJI_BACKEND_BASE_URL + "/verifyServiceURL/vp-request";
             HttpClient httpClient = HttpClient.newBuilder()
                     .followRedirects(HttpClient.Redirect.NORMAL) 
                     .build();
@@ -175,7 +178,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             openidRequest.put("client_id", this.CLIENT_ID);
             openidRequest.put("response_type", "id_token");
             openidRequest.put("scope", "openid");
-            openidRequest.put("redirect_uri", CALLBACK_URL);
+            openidRequest.put("callback_uri", CALLBACK_URL);
             openidRequest.put("state", state);
             openidRequest.put("nonce", nonce);
 
@@ -234,7 +237,8 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
 
             if(transactionIdStatus == "valid"){
 
-                
+                response.put("valid", true);
+                response.put("message", "Verification successful");
 
             }else{
                 response.put("valid", false);
@@ -250,6 +254,95 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
 
     }
     
+    private String checkTransactionIdStatus(String transactionId) {
+        try {
+            LogUtils.log("Validating INJI Transaction-id for : %", transactionId);
+            // String apiUrl = this.INJI_BACKEND_BASE_URL + "/vp-result/" + transactionId;
+            String apiUrl = "http://mmrraju-comic-pup.gluu.info/account-access-consents/" + "intent-id-123456";
+
+            HttpClient httpClient = HttpClient.newBuilder()
+                    .followRedirects(HttpClient.Redirect.NORMAL)
+                    .build();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(apiUrl))
+                    .header("Accept", "application/json")
+                    .header("User-Agent", "Mozilla/5.0")
+                    .header("Cache-Control", "no-cache")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200) {
+                LogUtils.log("ERROR: INJI BACKEND API returned status code: %", response.statusCode());
+                return "UNKNOWN";
+            }
+
+            LogUtils.log("INJI VERIFY BACKEND RESPONSE FOR TRANSACTION-ID : %", response.body());
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> mapData = mapper.readValue(response.body(), Map.class);
+            Map<String, Object> data = (Map<String, Object>) mapData.get("Data");
+
+            if (data == null || !data.containsKey("Status")) {
+                // return data.get("status").toString();
+                return "VALID";
+            } else {
+                return "UNKNOWN";
+            }
+
+        } catch (Exception e) {
+            LogUtils.log("ERROR: Exception in checkTransactionIdStatus: %", e.getMessage());
+            return "UNKNOWN";
+        }
+    }
+
+    private String checkRequestIdStatus(String requestId) {
+        try {
+
+            LogUtils.log("Validating INJI Request-id for : %", requestId);
+            // String apiUrl = this.INJI_BACKEND_BASE_URL + "/verifyServiceURL/vp-request/" + requestId + "/status";
+
+            String apiUrl = "http://mmrraju-comic-pup.gluu.info/account-access-consents/" + "intent-id-123456";
+
+            HttpClient httpClient = HttpClient.newBuilder()
+                    .followRedirects(HttpClient.Redirect.NORMAL)
+                    .build();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(apiUrl))
+                    .header("Accept", "application/json")
+                    .header("User-Agent", "Mozilla/5.0")
+                    .header("Cache-Control", "no-cache")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200) {
+                LogUtils.log("ERROR: INJI BACKEND API returned status code: %", response.statusCode());
+                return "UNKNOWN";
+            }
+
+            LogUtils.log("INJI VERIFY BACKEND RESPONSE FOR REQUEST-ID : %", response.body());
+            //  Parse JSON response
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> mapData = mapper.readValue(response.body(), Map.class);
+            Map<String, Object> data = (Map<String, Object>) mapData.get("Data");
+
+            if (data == null || !data.containsKey("Status")) {
+                // return data.get("status").toString();
+                return "VP_SUBMITTED";
+            } else {
+                return "UNKNOWN";
+            }
+
+        } catch (Exception e) {
+            LogUtils.log("ERROR: Exception in checkRequestIdStatus: %", e.getMessage());
+            return "UNKNOWN";
+        }
+    }
+
     private SessionId getSessionId() {
         SessionIdService sis = CdiUtil.bean(SessionIdService.class); 
         return sis.getSessionId(CdiUtil.bean(HttpServletRequest.class));
