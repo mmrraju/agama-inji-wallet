@@ -235,7 +235,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
 
             String transactionIdStatus = checkTransactionIdStatus(transactionId);
 
-            if(transactionIdStatus == "valid"){
+            if(transactionIdStatus == "VALID"){
 
                 response.put("valid", true);
                 response.put("message", "Verification successful");
