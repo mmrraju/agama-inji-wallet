@@ -61,7 +61,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
     private String INJI_RFAC_BASE_URL = "";
     private String  CLIENT_ID;
     public static String CALLBACK_URL= "https://mmrraju-promoted-macaque.gluu.info/jans-auth/fl/callback"; // Agama call-back URL
-    private String RFAC_DEMO_BASE = "https://mmrraju-adapted-crab.gluu.info/rfac-demo.html"; // INJI RP URL.
+    private String RFAC_DEMO_BASE = "https://mmrraju-adapted-crab.gluu.info/inji-user.html"; // INJI RP URL.
 
     private static AgamaInjiVerificationServiceImpl INSTANCE = null;
 
@@ -89,6 +89,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             String clientId = sessionAttrs.get("client_id");
             this.CLIENT_ID = clientId;
             // Build DEMO Authorization Request Payload
+            LogUtils.log("Build authorization request Payload and send a POST Request to INJI BACKEND API");
             Map<String, Object> authRequest = new HashMap<>();
             // authRequest.put("client_id", clientId);
             // authRequest.put("scope", "openid");
