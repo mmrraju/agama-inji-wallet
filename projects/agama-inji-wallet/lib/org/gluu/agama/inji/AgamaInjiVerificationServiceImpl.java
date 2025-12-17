@@ -57,7 +57,7 @@ import org.gluu.agama.inji.AgamaInjiVerificationService;
 public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationService{
 
     private String INJI_API_ENDPOINT = "http://mmrraju-comic-pup.gluu.info/backend/consent/new"; // Actual INJI Backend URL
-    private String INJI_BACKEND_BASE_URL = "http://mmrraju-comic-pup.gluu.info";
+    private String INJI_BACKEND_BASE_URL = "https://injiverify.collab.mosip.net";
     private String INJI_RFAC_BASE_URL = "";
     private String  CLIENT_ID;
     public static String CALLBACK_URL= "https://mmrraju-promoted-macaque.gluu.info/jans-auth/fl/callback"; // Agama call-back URL
@@ -107,18 +107,19 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
 
             String jsonPayload = new ObjectMapper().writeValueAsString(authRequest);
 
-            // String endpoint = this.INJI_BACKEND_BASE_URL + "/verifyServiceURL/vp-request";
+            String endpoint = this.INJI_BACKEND_BASE_URL + "/v1/verify/vp-request";
+            String payload = (String) sessionAttrs.get("request");
             HttpClient httpClient = HttpClient.newBuilder()
                     .followRedirects(HttpClient.Redirect.NORMAL) 
                     .build();
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(INJI_API_ENDPOINT))
+                    .uri(URI.create(endpoint))
                     .header("Accept", "application/json")
                     .header("Content-Type", "application/json")
                     .header("User-Agent", "Mozilla/5.0")
                     .header("Cache-Control", "no-cache")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
+                    .POST(HttpRequest.BodyPublishers.ofString(payload))
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
