@@ -88,29 +88,54 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             LogUtils.log(sessionAttrs);
             String clientId = sessionAttrs.get("client_id");
             this.CLIENT_ID = clientId;
-            // Build DEMO Authorization Request Payload
-            LogUtils.log("Build authorization request Payload and send a POST Request to INJI BACKEND API...");
-            Map<String, Object> authRequest = new HashMap<>();
-            // authRequest.put("client_id", clientId);
-            // authRequest.put("scope", "openid");
-            // authRequest.put("response_type", "vp_token");
-            // authRequest.put("nonce", UUID.randomUUID().toString());
-            // authRequest.put("state", UUID.randomUUID().toString());
+            LogUtils.log("Send a POST Request to INJI Verify BACKEND API...");
+            Map<String, Object> requestPayload = new HashMap<>();
+            requestPayload.put("clientId", clientId);
+            Map<String, Object> presentationDefinition = new HashMap<>();
+            presentationDefinition.put("id", "c4822b58-7fb4-454e-b827-f8758fe27f9a");
+            presentationDefinition.put(
+                    "purpose",
+                    "Relying party is requesting your digital ID for the purpose of Self-Authentication"
+            );
 
-            authRequest.put("consent_id", "intent-id-123456");
-            authRequest.put("status", "Authorised");
-            authRequest.put("permissions", List.of(
-                                "ReadAccountsBasic",
-                                "ReadBalances"
-                        ));
-            authRequest.put("expires_in", 3600);
+            presentationDefinition.put(
+                    "format",
+                    Map.of(
+                            "ldp_vc",
+                            Map.of("proof_type", new String[]{"Ed25519Signature2020"})
+                    )
+            );
 
-            String jsonPayload = new ObjectMapper().writeValueAsString(authRequest);
+            presentationDefinition.put(
+                    "input_descriptors",
+                    new Object[]{
+                            Map.of(
+                                    "id", "id card credential",
+                                    "format", Map.of(
+                                            "ldp_vc",
+                                            Map.of("proof_type", new String[]{"RsaSignature2018"})
+                                    ),
+                                    "constraints", Map.of(
+                                            "fields", new Object[]{
+                                                    Map.of(
+                                                            "path", new String[]{"$.type"},
+                                                            "filter", Map.of(
+                                                                    "type", "object",
+                                                                    "pattern", "MOSIPVerifiableCredential"
+                                                            )
+                                                    )
+                                            }
+                                    )
+                            )
+                    }
+            );
 
+            requestPayload.put("presentationDefinition", presentationDefinition);
+            String jsonPayload = new ObjectMapper().writeValueAsString(requestPayload);
+            LogUtils.log("Payload object: %", requestPayload);
+            LogUtils.log("Payload JSON: %", jsonPayload);
             String endpoint = this.INJI_BACKEND_BASE_URL + "/v1/verify/vp-request";
-            // String payload = (String) sessionAttrs.get("request"); presentationDefinition
-            String payload = (String) sessionAttrs.get("param");
-            LogUtils.log("Request param: %", payload);
+
             
             HttpClient httpClient = HttpClient.newBuilder()
                     .followRedirects(HttpClient.Redirect.NORMAL) 
@@ -122,47 +147,38 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
                     .header("Content-Type", "application/json")
                     .header("User-Agent", "Mozilla/5.0")
                     .header("Cache-Control", "no-cache")
-                    .POST(HttpRequest.BodyPublishers.ofString(payload))
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() != 200) {
+            if (response.statusCode() == 200 || response.statusCode() == 201) {
+                String jsonResponse = response.body();
+                LogUtils.log("INJI Verify Backend Response: %", jsonResponse);
+                ObjectMapper mapper = new ObjectMapper();
+                Map<String, Object> data = mapper.readValue(jsonResponse, Map.class);
+
+                if (data == null || !data.containsKey("requestId") || !data.containsKey("transactionId")) {
+                    LogUtils.log("ERROR: Missing Data from INJI backend Response response");
+                    responseMap.put("valid", false);
+                    responseMap.put("message", "ERROR: Missing Data from INJI Verify backend response");
+                }  
+                String transactionId = (String) data.get("transactionId");
+                String requestId = (String) data.get("requestId");
+                responseMap.put("valid", true);
+                responseMap.put("message", "INJI Verify Backed System response is satisfy");
+                responseMap.put("requestId", requestId);
+                responseMap.put("transactionId", transactionId);
+                return responseMap;               
+           
+            }else{
                 LogUtils.log("ERROR: INJI Verify returned status code: %", response.statusCode());
                 responseMap.put("valid", false);
 
                 responseMap.put("message", "ERROR: INJI BACKEND returned status code: % "+response.statusCode());
                 return responseMap;
             }
-            String jsonResponse = response.body();
-            LogUtils.log("INJI Backend Response: %", jsonResponse);
 
-            // Parse JSON using your existing ObjectMapper
-            ObjectMapper mapper = new ObjectMapper();
-            Map<String, Object> data = mapper.readValue(jsonResponse, Map.class);
-            // Map<String, Object> data = (Map<String, Object>) consentMap.get("Data");
-
-            // if (data == null || !data.containsKey("requestId") || !data.containsKey("transactionId")) {
-            //     LogUtils.log("ERROR: Missing Data from INJI backend Response response");
-            //     responseMap.put("valid", false);
-            //     responseMap.put("message", "ERROR: Missing Data from INJI backend response");
-            // }  
-            if (data == null || !data.containsKey("Status")) {
-                LogUtils.log("ERROR: Missing Data from INJI backendresponse");
-                responseMap.put("valid", false);
-                responseMap.put("message", "ERROR: Missing Data from INJI backend response");
-                return responseMap;
-            }   
-            
-            String status = (String) data.get("Status");
-            LogUtils.log("INJI Backend status: %", status);
-            if("Authorised".equalsIgnoreCase(status)){
-                responseMap.put("valid", true);
-                responseMap.put("message", "INJI Backed System response is satisfy");
-                responseMap.put("requestId", "R_ID_12345");
-                responseMap.put("transactionId", "TXN_ID_12345");
-                return responseMap;               
-            }
 
         } catch (Exception e) {
             responseMap.put("valid", false);
