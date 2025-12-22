@@ -201,11 +201,11 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             LogUtils.log("Preparing OpenID4VP request URL for Inji Web");
 
             String nonce = this.AUTHORIZATION_DETAILS.get("nonce").toString();
-            LogUtils.log("NONCE : %", nonce);
+            // LogUtils.log("NONCE : %", nonce);
             String baseUrl = this.INJI_WEB_BASE_URL + "/authorize";
 
             String presentationDefinitionJson = new JSONObject(this.AUTHORIZATION_DETAILS.get("presentationDefinition")).toString();
-            LogUtils.log("Presentation defenation: %", presentationDefinitionJson);
+            // LogUtils.log("Presentation defenation: %", presentationDefinitionJson);
             //Client metadata (exactly as Inji expects)
             String clientMetadataJson = new JSONObject(Map.of(
                     "client_name", "Agama Application",
@@ -221,16 +221,17 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
                     )
             )).toString();
 
-            LogUtils.log(clientMetadataJson);
+            // LogUtils.log(clientMetadataJson);
             // Build final URL
             String url = baseUrl +
                     "?client_id=" + URLEncoder.encode(CLIENT_ID, StandardCharsets.UTF_8) +
                     "&client_id_scheme=pre-registered" +
                     "&presentation_definition=" + URLEncoder.encode(presentationDefinitionJson, StandardCharsets.UTF_8) +
                     "&nonce=" + URLEncoder.encode(nonce, StandardCharsets.UTF_8) +
-                    "&response_uri=" + URLEncoder.encode(CALLBACK_URL, StandardCharsets.UTF_8) +
-                    "&response_type=vp_token" +
-                    "&response_mode=direct_post" +
+                    "&response_uri=" + URLEncoder.encode(this.AUTHORIZATION_DETAILS.get("responseUri"), StandardCharsets.UTF_8) +
+                    "&callback_url=" + URLEncoder.encode(this.CALLBACK_URL, StandardCharsets.UTF_8) +
+                    "&response_type=" +this.AUTHORIZATION_DETAILS.get("responseType")  +
+                    "&response_mode=" + this.AUTHORIZATION_DETAILS.get("responseMode") +
                     "&state=" + URLEncoder.encode(requestId, StandardCharsets.UTF_8) +
                     "&client_metadata=" + URLEncoder.encode(clientMetadataJson, StandardCharsets.UTF_8);
 
@@ -241,53 +242,6 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             LogUtils.log("ERROR: Failed to build OpenID4VP URL: %", e.getMessage());
             return null;
         }
-
-    //    try {
-    //         LogUtils.log("Preparing OpenID4VP Request");
-    //         // Generate state + nonce
-    //         String state = UUID.randomUUID().toString();
-    //         String nonce = generateNonce(24);
-
-    //         // Build minimal OpenID4VP request object
-    //         JSONObject openidRequest = new JSONObject();
-    //         openidRequest.put("client_id", this.CLIENT_ID);
-    //         openidRequest.put("response_type", "id_token");
-    //         openidRequest.put("scope", "openid");
-    //         openidRequest.put("callback_uri", CALLBACK_URL);
-    //         openidRequest.put("state", state);
-    //         openidRequest.put("nonce", nonce);
-
-    //         // Correlation to the previously created request
-    //         openidRequest.put("request_id", requestId);
-    //         openidRequest.put("transaction_id", transactionId);
-
-    //         // Minimal presentation_definition placeholder (replace with real PD later)
-    //         Map<String, Object> pd = new HashMap<>();
-    //         pd.put("id", "pd-" + UUID.randomUUID());
-    //         pd.put("input_descriptors", new Object[] {
-    //                 Map.of(
-    //                     "id", "placeholder-cred",
-    //                     "purpose", "Placeholder: replace with real presentation definition when ready"
-    //                 )
-    //         });
-    //         openidRequest.put("presentation_definition", pd);
-
-    //         String encodedPayload = Base64.getUrlEncoder().withoutPadding()
-    //                             .encodeToString(openidRequest.toString().getBytes(StandardCharsets.UTF_8));
-    //         String url = RFAC_DEMO_BASE + "?request=" + URLEncoder.encode(encodedPayload, StandardCharsets.UTF_8);
-
-    //         // Optionally include state and requestId explicitly as query params for clarity:
-    //         url += "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8);
-    //         url += "&requestId=" + URLEncoder.encode(requestId, StandardCharsets.UTF_8);
-
-    //         // Return the ready-to-open URL
-    //         return url;
-
-    //     } catch (Exception e) {
-    //         // handle/log error depending on your logging utils
-    //         LogUtils.log("ERROR: Failed to build OpenID request URL: %", e.getMessage());
-    //         return null;
-    //     }
     }
 
     @Override
