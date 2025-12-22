@@ -201,11 +201,11 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             LogUtils.log("Preparing OpenID4VP request URL for Inji Web");
 
             String nonce = this.AUTHORIZATION_DETAILS.get("nonce").toString();
-
+            LogUtils.log("NONCE : %", nonce);
             String baseUrl = this.INJI_WEB_BASE_URL + "/authorize";
 
             String presentationDefinitionJson = this.AUTHORIZATION_DETAILS.get("presentationDefinition").toString();
-
+            LogUtils.log("Presentation defenation: %", presentationDefinitionJson);
             //Client metadata (exactly as Inji expects)
             String clientMetadataJson = new JSONObject(Map.of(
                     "client_name", "Agama Application",
@@ -221,6 +221,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
                     )
             )).toString();
 
+            LogUtils.log(clientMetadataJson);
             // Build final URL
             String url = baseUrl
                     + "?client_id=" + URLEncoder.encode(this.CLIENT_ID, StandardCharsets.UTF_8)
