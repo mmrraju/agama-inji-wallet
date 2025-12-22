@@ -58,8 +58,12 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
 
     private String INJI_API_ENDPOINT = "http://mmrraju-comic-pup.gluu.info/backend/consent/new"; // Actual INJI Backend URL
     private String INJI_BACKEND_BASE_URL = "https://injiverify.collab.mosip.net";
-    private String INJI_RFAC_BASE_URL = "";
+    private String INJI_WEB_BASE_URL = "https://injiweb.collab.mosip.net";
     private String  CLIENT_ID;
+    private Map<String, Object> AUTHORIZATION_DETAILS = new HashMap<>();
+    private String NONCE ;
+    private String RESPONSE_URL ;
+
     public static String CALLBACK_URL= "https://mmrraju-promoted-macaque.gluu.info/jans-auth/fl/callback"; // Agama call-back URL
     private String RFAC_DEMO_BASE = "https://mmrraju-adapted-crab.gluu.info/inji-user.html"; // INJI RP URL.
 
@@ -165,6 +169,8 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
                 }  
                 String transactionId = (String) data.get("transactionId");
                 String requestId = (String) data.get("requestId");
+                this.AUTHORIZATION_DETAILS = data.get("authorizationDetails");
+                LogUtils.log("Authorization details : %", this.AUTHORIZATION_DETAILS);
                 responseMap.put("valid", true);
                 responseMap.put("message", "INJI Verify Backed System response is satisfy");
                 responseMap.put("requestId", requestId);
