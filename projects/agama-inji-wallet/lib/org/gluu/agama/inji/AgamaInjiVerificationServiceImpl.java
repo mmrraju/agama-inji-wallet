@@ -174,7 +174,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
                 responseMap.put("valid", true);
                 responseMap.put("message", "INJI Verify Backed System response is satisfy");
                 responseMap.put("requestId", requestId);
-                responseMap.put("transactionId", transactionId);u
+                responseMap.put("transactionId", transactionId);
                 return responseMap;               
            
             }else{
