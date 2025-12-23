@@ -55,6 +55,19 @@
                             }
                         }
                     ]
+                },
+                "client_metadata": {
+                    "client_name": "Agama Application",
+                    "logo_uri": "https://mosip.github.io/inji-config/logos/StayProtectedInsurance.png",
+                    "vp_formats": {
+                        "ldp_vp": {
+                            "proof_type": [
+                                "Ed25519Signature2018",
+                                "Ed25519Signature2020",
+                                "RsaSignature2018"
+                            ]
+                        }
+                    }
                 }
             },
             "code": {}
