@@ -67,6 +67,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
     public static String CALLBACK_URL= "https://mmrraju-promoted-macaque.gluu.info/jans-auth/fl/callback"; // Agama call-back URL
     private String RFAC_DEMO_BASE = "https://mmrraju-adapted-crab.gluu.info/inji-user.html"; // INJI RP URL.
     private HashMap<String, Object> flowConfig;
+    private HashMap<String, Object> PRESENATION_DEFINITION;
     private static AgamaInjiVerificationServiceImpl INSTANCE = null;
 
 
@@ -74,8 +75,11 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
         LogUtils.log("Flow config provided is: %", config);
         flowConfig = config;
 
+
+
         this.INJI_BACKEND_BASE_URL = flowConfig.get("injiVerifyBaseURL") !=null ? flowConfig.get("injiVerifyBaseURL").toString() : INJI_BACKEND_BASE_URL;
         this.INJI_WEB_BASE_URL = flowConfig.get("injiWebBaseURL") !=null ? flowConfig.get("injiWebBaseURL").toString() : INJI_WEB_BASE_URL;
+        this.PRESENATION_DEFINITION = flowConfig.get("presentationDefinition") !=null ? (HashMap<String, Object>) flowConfig.get("presentationDefinition") : this.getPresentationDefinitionSample();
 
 
     }
@@ -96,53 +100,53 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
         try {
             LogUtils.log("Retrieve  session...");
             Map<String, String> sessionAttrs = getSessionId().getSessionAttributes();
-            
+
             LogUtils.log(sessionAttrs);
             String clientId = sessionAttrs.get("client_id");
             this.CLIENT_ID = clientId;
             LogUtils.log("Send a POST Request to INJI Verify BACKEND API...");
             Map<String, Object> requestPayload = new HashMap<>();
             requestPayload.put("clientId", clientId);
-            Map<String, Object> presentationDefinition = new HashMap<>();
-            presentationDefinition.put("id", "c4822b58-7fb4-454e-b827-f8758fe27f9a");
-            presentationDefinition.put(
-                    "purpose",
-                    "Relying party is requesting your digital ID for the purpose of Self-Authentication"
-            );
+            Map<String, Object> presentationDefinition = getPresentationDefinitionSample();
+            // presentationDefinition.put("id", "c4822b58-7fb4-454e-b827-f8758fe27f9a");
+            // presentationDefinition.put(
+            //         "purpose",
+            //         "Relying party is requesting your digital ID for the purpose of Self-Authentication"
+            // );
 
-            presentationDefinition.put(
-                    "format",
-                    Map.of(
-                            "ldp_vc",
-                            Map.of("proof_type", new String[]{"Ed25519Signature2020"})
-                    )
-            );
+            // presentationDefinition.put(
+            //         "format",
+            //         Map.of(
+            //                 "ldp_vc",
+            //                 Map.of("proof_type", new String[]{"Ed25519Signature2020"})
+            //         )
+            // );
 
-            presentationDefinition.put(
-                    "input_descriptors",
-                    new Object[]{
-                            Map.of(
-                                    "id", "id card credential",
-                                    "format", Map.of(
-                                            "ldp_vc",
-                                            Map.of("proof_type", new String[]{"RsaSignature2018"})
-                                    ),
-                                    "constraints", Map.of(
-                                            "fields", new Object[]{
-                                                    Map.of(
-                                                            "path", List.of('$.type'),
-                                                            "filter", Map.of(
-                                                                    "type", "object",
-                                                                    "pattern", "MOSIPVerifiableCredential"
-                                                            )
-                                                    )
-                                            }
-                                    )
-                            )
-                    }
-            );
+            // presentationDefinition.put(
+            //         "input_descriptors",
+            //         new Object[]{
+            //                 Map.of(
+            //                         "id", "id card credential",
+            //                         "format", Map.of(
+            //                                 "ldp_vc",
+            //                                 Map.of("proof_type", new String[]{"RsaSignature2018"})
+            //                         ),
+            //                         "constraints", Map.of(
+            //                                 "fields", new Object[]{
+            //                                         Map.of(
+            //                                                 "path", List.of('$.type'),
+            //                                                 "filter", Map.of(
+            //                                                         "type", "object",
+            //                                                         "pattern", "MOSIPVerifiableCredential"
+            //                                                 )
+            //                                         )
+            //                                 }
+            //                         )
+            //                 )
+            //         }
+            // );
 
-            requestPayload.put("presentationDefinition", presentationDefinition);
+            requestPayload.put("presentationDefinition", PRESENATION_DEFINITION);
             String jsonPayload = new ObjectMapper().writeValueAsString(requestPayload);
             LogUtils.log("Payload object: %", requestPayload);
             LogUtils.log("Payload JSON: %", jsonPayload);
@@ -380,4 +384,46 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
         return sb.toString();
     }    
 
+    private HashMap<String, Object> getPresentationDefinitionSample(){
+
+            Map<String, Object> presentationDefinition = new HashMap<>();
+            presentationDefinition.put("id", "c4822b58-7fb4-454e-b827-f8758fe27f9a");
+            presentationDefinition.put(
+                    "purpose",
+                    "Relying party is requesting your digital ID for the purpose of Self-Authentication"
+            );
+
+            presentationDefinition.put(
+                    "format",
+                    Map.of(
+                            "ldp_vc",
+                            Map.of("proof_type", new String[]{"Ed25519Signature2020"})
+                    )
+            );
+
+            presentationDefinition.put(
+                    "input_descriptors",
+                    new Object[]{
+                            Map.of(
+                                    "id", "id card credential",
+                                    "format", Map.of(
+                                            "ldp_vc",
+                                            Map.of("proof_type", new String[]{"RsaSignature2018"})
+                                    ),
+                                    "constraints", Map.of(
+                                            "fields", new Object[]{
+                                                    Map.of(
+                                                            "path", List.of('$.type'),
+                                                            "filter", Map.of(
+                                                                    "type", "object",
+                                                                    "pattern", "MOSIPVerifiableCredential"
+                                                            )
+                                                    )
+                                            }
+                                    )
+                            )
+                    }
+            );   
+            return presentationDefinition;     
+    }
 }
