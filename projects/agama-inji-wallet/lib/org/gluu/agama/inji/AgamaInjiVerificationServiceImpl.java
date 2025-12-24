@@ -56,7 +56,7 @@ import org.gluu.agama.inji.AgamaInjiVerificationService;
 
 public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationService{
 
-    private String INJI_API_ENDPOINT = "http://mmrraju-comic-pup.gluu.info/backend/consent/new"; // Actual INJI Backend URL
+    // private String INJI_API_ENDPOINT = "http://mmrraju-comic-pup.gluu.info/backend/consent/new";
     private String INJI_BACKEND_BASE_URL = "https://injiverify.collab.mosip.net";
     private String INJI_WEB_BASE_URL = "https://injiweb.collab.mosip.net";
     private String  CLIENT_ID;
@@ -66,17 +66,25 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
 
     public static String CALLBACK_URL= "https://mmrraju-promoted-macaque.gluu.info/jans-auth/fl/callback"; // Agama call-back URL
     private String RFAC_DEMO_BASE = "https://mmrraju-adapted-crab.gluu.info/inji-user.html"; // INJI RP URL.
-
+    private HashMap<String, Object> flowConfig;
     private static AgamaInjiVerificationServiceImpl INSTANCE = null;
 
 
-    public AgamaInjiVerificationServiceImpl(){}
+    public AgamaInjiVerificationServiceImpl(HashMap config){
+        LogUtils.log("Flow config provided is: %", config);
+        flowConfig = config;
 
-    public static synchronized AgamaInjiVerificationServiceImpl getInstance()
+        this.INJI_BACKEND_BASE_URL = flowConfig.get("injiVerifyBaseURL") !=null ? flowConfig.get("injiVerifyBaseURL").toString() : INJI_BACKEND_BASE_URL;
+        this.INJI_WEB_BASE_URL = flowConfig.get("injiWebBaseURL") !=null ? flowConfig.get("injiWebBaseURL").toString() : INJI_WEB_BASE_URL;
+
+
+    }
+
+    public static synchronized AgamaInjiVerificationServiceImpl getInstance(HashMap config)
     {
         
         if (INSTANCE == null)
-            INSTANCE = new AgamaInjiVerificationServiceImpl();
+            INSTANCE = new AgamaInjiVerificationServiceImpl(config);
         return INSTANCE;
     } 
 
