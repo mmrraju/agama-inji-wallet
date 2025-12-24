@@ -68,6 +68,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
     private String RFAC_DEMO_BASE = "https://mmrraju-adapted-crab.gluu.info/inji-user.html"; // INJI RP URL.
     private HashMap<String, Object> flowConfig;
     private HashMap<String, Object> PRESENATION_DEFINITION;
+    private HashMap<String, Object> CLIENT_METADATA;
     private static AgamaInjiVerificationServiceImpl INSTANCE = null;
 
 
@@ -75,12 +76,10 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
         LogUtils.log("Flow config provided is: %", config);
         flowConfig = config;
 
-
-
         this.INJI_BACKEND_BASE_URL = flowConfig.get("injiVerifyBaseURL") !=null ? flowConfig.get("injiVerifyBaseURL").toString() : INJI_BACKEND_BASE_URL;
         this.INJI_WEB_BASE_URL = flowConfig.get("injiWebBaseURL") !=null ? flowConfig.get("injiWebBaseURL").toString() : INJI_WEB_BASE_URL;
         this.PRESENATION_DEFINITION = flowConfig.get("presentationDefinition") !=null ? (HashMap<String, Object>) flowConfig.get("presentationDefinition") : this.getPresentationDefinitionSample();
-
+        this.CLIENT_METADATA = flowConfig.get("clientMetadata")  !=null ? (HashMap<String, Object>) flowConfig.get("clientMetadata") : this.buildClientMetadata();
 
     }
 
@@ -107,45 +106,6 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             LogUtils.log("Send a POST Request to INJI Verify BACKEND API...");
             Map<String, Object> requestPayload = new HashMap<>();
             requestPayload.put("clientId", clientId);
-            Map<String, Object> presentationDefinition = getPresentationDefinitionSample();
-            // presentationDefinition.put("id", "c4822b58-7fb4-454e-b827-f8758fe27f9a");
-            // presentationDefinition.put(
-            //         "purpose",
-            //         "Relying party is requesting your digital ID for the purpose of Self-Authentication"
-            // );
-
-            // presentationDefinition.put(
-            //         "format",
-            //         Map.of(
-            //                 "ldp_vc",
-            //                 Map.of("proof_type", new String[]{"Ed25519Signature2020"})
-            //         )
-            // );
-
-            // presentationDefinition.put(
-            //         "input_descriptors",
-            //         new Object[]{
-            //                 Map.of(
-            //                         "id", "id card credential",
-            //                         "format", Map.of(
-            //                                 "ldp_vc",
-            //                                 Map.of("proof_type", new String[]{"RsaSignature2018"})
-            //                         ),
-            //                         "constraints", Map.of(
-            //                                 "fields", new Object[]{
-            //                                         Map.of(
-            //                                                 "path", List.of('$.type'),
-            //                                                 "filter", Map.of(
-            //                                                         "type", "object",
-            //                                                         "pattern", "MOSIPVerifiableCredential"
-            //                                                 )
-            //                                         )
-            //                                 }
-            //                         )
-            //                 )
-            //         }
-            // );
-
             requestPayload.put("presentationDefinition", PRESENATION_DEFINITION);
             String jsonPayload = new ObjectMapper().writeValueAsString(requestPayload);
             LogUtils.log("Payload object: %", requestPayload);
@@ -218,23 +178,9 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
 
             String presentationDefinitionJson = new JSONObject(this.AUTHORIZATION_DETAILS.get("presentationDefinition")).toString();
             // LogUtils.log("Presentation defenation: %", presentationDefinitionJson);
-            //Client metadata (exactly as Inji expects)
-            String clientMetadataJson = new JSONObject(Map.of(
-                    "client_name", "Agama Application",
-                    "logo_uri", "https://mosip.github.io/inji-config/logos/StayProtectedInsurance.png",
-                    "vp_formats", Map.of(
-                            "ldp_vp", Map.of(
-                                    "proof_type", List.of(
-                                            "Ed25519Signature2018",
-                                            "Ed25519Signature2020",
-                                            "RsaSignature2018"
-                                    )
-                            )
-                    )
-            )).toString();
+            String clientMetadataJson = this.CLIENT_METADATA.toString();
 
             // LogUtils.log(clientMetadataJson);
-            // Build final URL
             String url = baseUrl +
                     "?client_id=" + URLEncoder.encode(CLIENT_ID, StandardCharsets.UTF_8) +
                     "&client_id_scheme=pre-registered" +
@@ -426,4 +372,28 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             );   
             return presentationDefinition;     
     }
+
+    private HashMap<String, Object> buildClientMetadata() {
+
+        HashMap<String, Object> clientMetadata = new HashMap<>();
+
+        clientMetadata.put("client_name", "Agama Application");
+        clientMetadata.put("logo_uri",
+                "https://mosip.github.io/inji-config/logos/StayProtectedInsurance.png");
+
+        HashMap<String, Object> ldpVp = new HashMap<>();
+        ldpVp.put("proof_type", List.of(
+                "Ed25519Signature2018",
+                "Ed25519Signature2020",
+                "RsaSignature2018"
+        ));
+
+        HashMap<String, Object> vpFormats = new HashMap<>();
+        vpFormats.put("ldp_vp", ldpVp);
+
+        clientMetadata.put("vp_formats", vpFormats);
+
+        return clientMetadata;
+    }
+
 }
