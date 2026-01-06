@@ -71,15 +71,22 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
     private HashMap<String, Object> CLIENT_METADATA;
     private static AgamaInjiVerificationServiceImpl INSTANCE = null;
 
+    public AgamaInjiVerificationServiceImpl(){}
 
     public AgamaInjiVerificationServiceImpl(HashMap config){
-        LogUtils.log("Flow config provided is: %", config);
-        flowConfig = config;
+        if(config != null){
+            LogUtils.log("Flow config provided is: %", config);
+            flowConfig = config;
 
-        this.INJI_BACKEND_BASE_URL = flowConfig.get("injiVerifyBaseURL") !=null ? flowConfig.get("injiVerifyBaseURL").toString() : INJI_BACKEND_BASE_URL;
-        this.INJI_WEB_BASE_URL = flowConfig.get("injiWebBaseURL") !=null ? flowConfig.get("injiWebBaseURL").toString() : INJI_WEB_BASE_URL;
-        this.PRESENATION_DEFINITION = flowConfig.get("presentationDefinition") !=null ? (HashMap<String, Object>) flowConfig.get("presentationDefinition") : this.getPresentationDefinitionSample();
-        this.CLIENT_METADATA = flowConfig.get("clientMetadata")  !=null ? (HashMap<String, Object>) flowConfig.get("clientMetadata") : this.buildClientMetadata();
+            this.INJI_BACKEND_BASE_URL = flowConfig.get("injiVerifyBaseURL") !=null ? flowConfig.get("injiVerifyBaseURL").toString() : INJI_BACKEND_BASE_URL;
+            this.INJI_WEB_BASE_URL = flowConfig.get("injiWebBaseURL") !=null ? flowConfig.get("injiWebBaseURL").toString() : INJI_WEB_BASE_URL;
+            this.PRESENATION_DEFINITION = flowConfig.get("presentationDefinition") !=null ? (HashMap<String, Object>) flowConfig.get("presentationDefinition") : this.getPresentationDefinitionSample();
+            this.CLIENT_METADATA = flowConfig.get("clientMetadata")  !=null ? (HashMap<String, Object>) flowConfig.get("clientMetadata") : this.buildClientMetadata();
+            // this.CALLBACK_URL = flowConfig.get("agamaCallbackUrl") != null ? flowConfig.get("config").toString() : CALLBACK_URL;
+        }else{
+            LogUtils.log("No configuration provided using default may not work properly");
+        }
+
 
     }
 
@@ -92,18 +99,18 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
     } 
 
     @Override
-    public Map<String, Object> verifyServiceURL() {
+    public Map<String, Object> createVpVerificationRequest() {
 
         Map<String, Object> responseMap = new HashMap<>();
 
         try {
-            LogUtils.log("Retrieve  session...");
+            // LogUtils.log("Retrieve  session...");
             Map<String, String> sessionAttrs = getSessionId().getSessionAttributes();
 
             LogUtils.log(sessionAttrs);
             String clientId = sessionAttrs.get("client_id");
             this.CLIENT_ID = clientId;
-            LogUtils.log("Send a POST Request to INJI Verify BACKEND API...");
+            LogUtils.log("Create VP Verification Request...");
             Map<String, Object> requestPayload = new HashMap<>();
             requestPayload.put("clientId", clientId);
             requestPayload.put("presentationDefinition", PRESENATION_DEFINITION);
@@ -141,7 +148,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
                 }  
                 String transactionId = (String) data.get("transactionId");
                 String requestId = (String) data.get("requestId");
-                this.AUTHORIZATION_DETAILS = data.get("authorizationDetails");
+                this.AUTHORIZATION_DETAILS = (Map<String, Object>) data.get("authorizationDetails");
                 LogUtils.log("Authorization details : %", this.AUTHORIZATION_DETAILS);
                 responseMap.put("valid", true);
                 responseMap.put("message", "INJI Verify Backed System response is satisfy");
@@ -187,7 +194,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
                     "&presentation_definition=" + URLEncoder.encode(presentationDefinitionJson, StandardCharsets.UTF_8) +
                     "&nonce=" + URLEncoder.encode(nonce, StandardCharsets.UTF_8) +
                     "&response_uri=" + URLEncoder.encode(this.AUTHORIZATION_DETAILS.get("responseUri"), StandardCharsets.UTF_8) +
-                    "&callback_url=" + URLEncoder.encode(this.CALLBACK_URL, StandardCharsets.UTF_8) +
+                    // "&callback_url=" + URLEncoder.encode(this.CALLBACK_URL, StandardCharsets.UTF_8) +
                     "&response_type=" +this.AUTHORIZATION_DETAILS.get("responseType")  +
                     "&response_mode=" + this.AUTHORIZATION_DETAILS.get("responseMode") +
                     "&state=" + URLEncoder.encode(requestId, StandardCharsets.UTF_8) +
