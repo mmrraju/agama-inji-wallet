@@ -1,7 +1,7 @@
 [#ftl output_format="HTML"]
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error Page
+<head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Acknowledge Page
 	</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2/dist/tailwind.min.css" type="text/css"></head>
 <body>
 
@@ -19,8 +19,8 @@
 		  <div class="flex">
 			<img src="https://gluu.org/wp-content/uploads/2020/12/logo.png">
 		  </div>
-
-		</div>
+		  <p>You've successfully verify you VP</p><p>
+		</p></div>
 		<form method="post" id="myForm" class="my-8">
 		  <div class="space-y-9">
 			<div class="button">
