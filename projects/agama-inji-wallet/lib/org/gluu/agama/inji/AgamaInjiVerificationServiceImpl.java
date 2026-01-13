@@ -59,7 +59,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
     // private String INJI_API_ENDPOINT = "http://mmrraju-comic-pup.gluu.info/backend/consent/new";
     private String INJI_BACKEND_BASE_URL = "https://injiverify.collab.mosip.net";
     private String INJI_WEB_BASE_URL = "https://injiweb.collab.mosip.net";
-    private String  CLIENT_ID;
+    private String  CLIENT_ID = "agama-app";
     private Map<String, Object> AUTHORIZATION_DETAILS = new HashMap<>();
     private String NONCE ;
     private String RESPONSE_URL ;
@@ -80,6 +80,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
 
             this.INJI_BACKEND_BASE_URL = flowConfig.get("injiVerifyBaseURL") !=null ? flowConfig.get("injiVerifyBaseURL").toString() : INJI_BACKEND_BASE_URL;
             this.INJI_WEB_BASE_URL = flowConfig.get("injiWebBaseURL") !=null ? flowConfig.get("injiWebBaseURL").toString() : INJI_WEB_BASE_URL;
+            this.CLIENT_ID = flowConfig.get("clientId") != null ? flowConfig.get("clientId").toString() : CLIENT_ID;
             this.PRESENATION_DEFINITION = flowConfig.get("presentationDefinition") !=null ? (HashMap<String, Object>) flowConfig.get("presentationDefinition") : this.getPresentationDefinitionSample();
             this.CLIENT_METADATA = flowConfig.get("clientMetadata")  !=null ? (HashMap<String, Object>) flowConfig.get("clientMetadata") : this.buildClientMetadata();
             // this.CALLBACK_URL = flowConfig.get("agamaCallbackUrl") != null ? flowConfig.get("config").toString() : CALLBACK_URL;
@@ -109,10 +110,10 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
 
             LogUtils.log(sessionAttrs);
             String clientId = sessionAttrs.get("client_id");
-            this.CLIENT_ID = clientId;
+            // this.CLIENT_ID = clientId;
             LogUtils.log("Create VP Verification Request...");
             Map<String, Object> requestPayload = new HashMap<>();
-            requestPayload.put("clientId", clientId);
+            requestPayload.put("clientId", CLIENT_ID);
             requestPayload.put("presentationDefinition", PRESENATION_DEFINITION);
             String jsonPayload = new ObjectMapper().writeValueAsString(requestPayload);
             LogUtils.log("Payload object: %", requestPayload);
@@ -200,8 +201,8 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
                     "&client_metadata=" + URLEncoder.encode(clientMetadataJson, StandardCharsets.UTF_8);
 
             LogUtils.log("URL : %", url);
-            // return url;
-            return RFAC_DEMO_BASE;
+            return url;
+            // return RFAC_DEMO_BASE;
 
         } catch (Exception e) {
             LogUtils.log("ERROR: Failed to build Inji Web Authorization URL: %", e.getMessage());
@@ -217,21 +218,21 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
         LogUtils.log("INJI user back to agama...");
 
         LogUtils.log("Data : %", resultFromApp);
-        // String requestIdStatus = checkRequestIdStatus(requestId);
+        String requestIdStatus = checkRequestIdStatus(requestId);
 
-        // if (!"VP_SUBMITTED".equals(requestIdStatus)) {
-        //     response.put("valid", false);
-        //     response.put("message", "Error: VP REQUEST ID STATUS is " + requestIdStatus);
-        //     return response;
-        // }
+        if (!"VP_SUBMITTED".equals(requestIdStatus)) {
+            response.put("valid", false);
+            response.put("message", "Error: VP REQUEST ID STATUS is " + requestIdStatus);
+            return response;
+        }
 
-        // String transactionIdStatus = checkTransactionIdStatus(transactionId);
+        String transactionIdStatus = checkTransactionIdStatus(transactionId);
 
-        // if (!"SUCCESS".equals(transactionIdStatus)) {
-        //     response.put("valid", false);
-        //     response.put("message", "Error: No VP submission found for given transaction ID " + transactionIdStatus);
-        //     return response;
-        // }
+        if (!"SUCCESS".equals(transactionIdStatus)) {
+            response.put("valid", false);
+            response.put("message", "Error: No VP submission found for given transaction ID " + transactionIdStatus);
+            return response;
+        }
 
         response.put("valid", true);
         response.put("message", "VP TOKEN Verification successful");
