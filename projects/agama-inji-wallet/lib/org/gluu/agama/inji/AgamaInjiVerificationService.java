@@ -18,3 +18,4 @@ public abstract class AgamaInjiVerificationService{
     public static AgamaInjiVerificationService getInstance(HashMap config){
         return AgamaInjiVerificationServiceImpl.getInstance(config);
     }
+}
