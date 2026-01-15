@@ -425,7 +425,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
     private String addAsNewUser(String email, String displayName){
         User user = getUser(MAIL, email);
         boolean local = user != null;
-        LogUtils.log("There is {} local account for {}", local ? "a" : "no", email);
+        LogUtils.log("There is % local account for %", local ? "a" : "no", email);
         if (local) {
             String uid = getSingleValuedAttr(user, UID);
             String inum = getSingleValuedAttr(user, INUM_ATTR);
@@ -441,21 +441,22 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
 
             return uid;
         }else{
+            User newUser = new User();
             String uid = email.substring(0, email.indexOf("@"));
         
-            user.setAttribute(UID, uid);
-            user.setAttribute(MAIL, email);
-            user.setAttribute(DISPLAY_NAME, displayName);
+            newUser.setAttribute(UID, uid);
+            newUser.setAttribute(MAIL, email);
+            newUser.setAttribute(DISPLAY_NAME, displayName);
 
             UserService userService = CdiUtil.bean(UserService.class);
-            user = userService.addUser(user, true);
-            if (user == null){
+            newUser = userService.addUser(newUser, true);
+            if (newUser == null){
                 LogUtils.log("Added user not found");
                 return null;
             };
             LogUtils.log("New user added : %", email);
-            String inum = getSingleValuedAttr(user, INUM_ATTR);
-            return getSingleValuedAttr(user, UID);
+            String inum = getSingleValuedAttr(newUser, INUM_ATTR);
+            return getSingleValuedAttr(newUser, UID);
                 
         } 
     }
@@ -485,22 +486,23 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
 
                 return new HashMap<>(Map.of(UID, uid, INUM_ATTR, inum, "name", name, "email", email));
             }else{
+                User newUser = new User();
                 String uid = email.substring(0, email.indexOf("@"));
                 List<Map<String, Object>> fullName = (List<Map<String, Object>>) credentialSubject.get("fullName");
                 String displayName = (String) fullName.get(0).get("value");
 
-                user.setAttribute(UID, uid);
-                user.setAttribute(MAIL, email);
-                user.setAttribute(DISPLAY_NAME, displayName);
+                newUser.setAttribute(UID, uid);
+                newUser.setAttribute(MAIL, email);
+                newUser.setAttribute(DISPLAY_NAME, displayName);
 
                 UserService userService = CdiUtil.bean(UserService.class);
-                user = userService.addUser(user, true);
-                if (user == null){
+                newUser = userService.addUser(newUser, true);
+                if (newUser == null){
                     LogUtils.log("Added user not found");
                     return null;
                 };
                 LogUtils.log("New user added : %", email);
-                String inum = getSingleValuedAttr(user, INUM_ATTR);
+                String inum = getSingleValuedAttr(newUser, INUM_ATTR);
                 return new HashMap<>(Map.of(UID, uid, INUM_ATTR,inum, DISPLAY_NAME, displayName, "email", email));
                 
             }
