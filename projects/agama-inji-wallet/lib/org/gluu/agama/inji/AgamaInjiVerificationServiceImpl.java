@@ -59,6 +59,10 @@ import org.gluu.agama.inji.AgamaInjiVerificationService;
 
 public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationService{
 
+    //
+    private String APP_USER_MAIL;
+    private String APP_USER_NAME;
+    //
     private static final String INUM_ATTR = "inum";
     private static final String UID = "uid";
     private static final String MAIL = "mail";
@@ -66,7 +70,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
     private static final String DISPLAY_NAME = "displayName";
     private static final String GIVEN_NAME = "givenName";
     private static final String SN = "sn";
-    private String USER_INFO_FROM_VC;
+    private String USER_INFO_FROM_VC = null;
     // private String INJI_API_ENDPOINT = "http://mmrraju-comic-pup.gluu.info/backend/consent/new";
     private String INJI_BACKEND_BASE_URL = "https://injiverify.collab.mosip.net";
     private String INJI_WEB_BASE_URL = "https://injiweb.collab.mosip.net";
@@ -230,7 +234,8 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
 
         LogUtils.log("Data : %", resultFromApp);
 
-        String uid = addAsNewUser(resultFromApp.get("email"), resultFromApp.get("name"));
+        APP_USER_MAIL = resultFromApp.get("email");
+        APP_USER_NAME = resultFromApp.get("name");
 
         // String requestIdStatus = checkRequestIdStatus(requestId);
 
@@ -422,7 +427,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
     }
 
     // This method will use for our demo.
-    private String addAsNewUser(String email, String displayName){
+    private Map<String, String> addAsNewUser(String email, String displayName){
         User user = getUser(MAIL, email);
         boolean local = user != null;
         LogUtils.log("There is % local account for %", local ? "a" : "no", email);
@@ -439,7 +444,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
                     }
             }
 
-            return uid;
+            return new HashMap<>(Map.of(UID, uid, INUM_ATTR, inum, "email", email));
         }else{
             User newUser = new User();
             String uid = email.substring(0, email.indexOf("@"));
@@ -456,7 +461,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             };
             LogUtils.log("New user added : %", email);
             String inum = getSingleValuedAttr(newUser, INUM_ATTR);
-            return getSingleValuedAttr(newUser, UID);
+            return new HashMap<>(Map.of(UID, uid, INUM_ATTR, inum, "email", email));
                 
         } 
     }
@@ -470,7 +475,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             String email = (String) credentialSubject.get("email");
             User user = getUser(MAIL, email);
             boolean local = user != null;
-            LogUtils.log("There is {} local account for {}", local ? "a" : "no", email);
+            LogUtils.log("There is % local account for %", local ? "a" : "no", email);
             if (local) {
                 String uid = getSingleValuedAttr(user, UID);
                 String inum = getSingleValuedAttr(user, INUM_ATTR);
@@ -507,8 +512,9 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
                 
             }
         }
+
         LogUtils.log("No user info found from VC");
-        return null;
+        return addAsNewUser(APP_USER_MAIL, DISPLAY_NAME);
     }
 
     private static User getUser(String attributeName, String value) {
