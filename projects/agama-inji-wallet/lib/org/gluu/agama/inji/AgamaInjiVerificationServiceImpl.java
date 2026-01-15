@@ -230,7 +230,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
 
         LogUtils.log("Data : %", resultFromApp);
 
-        String uid = addAsNewUser(resultFromApp.get("email"), resultFromApp.get("response"))
+        String uid = addAsNewUser(resultFromApp.get("email"), resultFromApp.get("name"));
 
         // String requestIdStatus = checkRequestIdStatus(requestId);
 
