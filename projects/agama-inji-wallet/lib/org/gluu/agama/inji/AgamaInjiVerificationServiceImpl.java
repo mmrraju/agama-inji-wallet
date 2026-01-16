@@ -226,14 +226,46 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
         }
     }
 
+    // @Override
+    // public Map<String, Object> verifyInjiAppResult(Map<String, String> resultFromApp, String requestId, String transactionId) {
+    //     Map<String, Object> response = new HashMap<>();
+
+    //     LogUtils.log("INJI user back to agama...");
+
+    //     LogUtils.log("Data : %", resultFromApp);
+
+    //     // APP_USER_MAIL = resultFromApp.get("email");
+    //     // APP_USER_NAME = resultFromApp.get("name");
+
+    //     String requestIdStatus = checkRequestIdStatus(requestId);
+
+    //     if (!"VP_SUBMITTED".equals(requestIdStatus)) {
+    //         response.put("valid", false);
+    //         response.put("message", "Error: VP REQUEST ID STATUS is " + requestIdStatus);
+    //         return response;
+    //     }
+
+    //     String transactionIdStatus = checkTransactionIdStatus(transactionId);
+
+    //     if (!"SUCCESS".equals(transactionIdStatus)) {
+    //         response.put("valid", false);
+    //         response.put("message", "Error: No VP submission found for given transaction ID " + transactionIdStatus);
+    //         return response;
+    //     }
+
+    //     response.put("valid", true);
+    //     response.put("message", "VP TOKEN Verification successful");
+    //     return response;
+
+    // }
+
     @Override
-    public Map<String, Object> verifyInjiAppResult(Map<String, String> resultFromApp, String requestId, String transactionId) {
-        // Example implementation
+    public Map<String, Object> verifyInjiAppResult(String requestId, String transactionId) {
         Map<String, Object> response = new HashMap<>();
 
         LogUtils.log("INJI user back to agama...");
 
-        LogUtils.log("Data : %", resultFromApp);
+        LogUtils.log("Data : requestId : % transactionId : %", requestId, transactionId);
 
         // APP_USER_MAIL = resultFromApp.get("email");
         // APP_USER_NAME = resultFromApp.get("name");
@@ -258,7 +290,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
         response.put("message", "VP TOKEN Verification successful");
         return response;
 
-    }
+    }    
     
     private String checkTransactionIdStatus(String transactionId) {
         try {
