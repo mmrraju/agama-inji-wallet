@@ -201,7 +201,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
 
             String presentationDefinitionJson = new JSONObject(this.AUTHORIZATION_DETAILS.get("presentationDefinition")).toString();
             // LogUtils.log("Presentation defenation: %", presentationDefinitionJson);
-            String clientMetadataJson = this.CLIENT_METADATA.toString();
+            String clientMetadataJson = new JSONObject(this.CLIENT_METADATA).toString();
 
             // LogUtils.log(clientMetadataJson);
             String url = baseUrl +
