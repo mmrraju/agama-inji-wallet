@@ -11,7 +11,8 @@ public abstract class AgamaInjiVerificationService{
 
     public abstract String buildInjiWebAuthorizationUrl(String requestId, String transactionId);
 
-    public abstract Map<String, Object> verifyInjiAppResult(Map<String, String> resultFromapp, String requestId, String transactionId);
+    // public abstract Map<String, Object> verifyInjiAppResult(Map<String, String> resultFromapp, String requestId, String transactionId);
+    public abstract Map<String, Object> verifyInjiAppResult(String requestId, String transactionId);
 
     public abstract Map<String, String> onboardUser();
 
