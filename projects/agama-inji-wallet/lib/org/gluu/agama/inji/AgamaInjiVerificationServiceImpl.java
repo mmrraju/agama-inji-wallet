@@ -79,11 +79,12 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
     private String NONCE ;
     private String RESPONSE_URL ;
 
-    public  String CALLBACK_URL= "https://mmrraju-promoted-macaque.gluu.info/jans-auth/fl/callback"; // Agama call-back URL
+    public  String CALLBACK_URL= ""; // Agama call-back URL
     private String RFAC_DEMO_BASE = "https://mmrraju-adapted-crab.gluu.info/inji-user.html"; // INJI RP URL.
     private HashMap<String, Object> flowConfig;
     private HashMap<String, Object> PRESENATION_DEFINITION;
     private HashMap<String, Object> CLIENT_METADATA;
+    private HashMap<String, String> VC_TO_GLUU_MAPPING; 
     private static AgamaInjiVerificationServiceImpl INSTANCE = null;
 
     public AgamaInjiVerificationServiceImpl(){}
@@ -98,9 +99,10 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             this.CLIENT_ID = flowConfig.get("clientId") != null ? flowConfig.get("clientId").toString() : CLIENT_ID;
             this.PRESENATION_DEFINITION = flowConfig.get("presentationDefinition") !=null ? (HashMap<String, Object>) flowConfig.get("presentationDefinition") : this.getPresentationDefinitionSample();
             this.CLIENT_METADATA = flowConfig.get("clientMetadata")  !=null ? (HashMap<String, Object>) flowConfig.get("clientMetadata") : this.buildClientMetadata();
-            // this.CALLBACK_URL = flowConfig.get("agamaCallbackUrl") != null ? flowConfig.get("config").toString() : CALLBACK_URL;
+            this.CALLBACK_URL = flowConfig.get("agamaCallBackUrl") != null ? flowConfig.get("agamaCallBackUrl").toString() : CALLBACK_URL;
+            this.VC_TO_GLUU_MAPPING = flowConfig.get("vcToGluuMapping") !=null ? (HashMap<String, String>) flowConfig.get("vcToGluuMapping"): VC_TO_GLUU_MAPPING;
         }else{
-            LogUtils.log("No configuration provided using default may not work properly");
+            LogUtils.log("Error: No configuration provided using default may not work properly...");
         }
 
 
@@ -226,38 +228,6 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
         }
     }
 
-    // @Override
-    // public Map<String, Object> verifyInjiAppResult(Map<String, String> resultFromApp, String requestId, String transactionId) {
-    //     Map<String, Object> response = new HashMap<>();
-
-    //     LogUtils.log("INJI user back to agama...");
-
-    //     LogUtils.log("Data : %", resultFromApp);
-
-    //     // APP_USER_MAIL = resultFromApp.get("email");
-    //     // APP_USER_NAME = resultFromApp.get("name");
-
-    //     String requestIdStatus = checkRequestIdStatus(requestId);
-
-    //     if (!"VP_SUBMITTED".equals(requestIdStatus)) {
-    //         response.put("valid", false);
-    //         response.put("message", "Error: VP REQUEST ID STATUS is " + requestIdStatus);
-    //         return response;
-    //     }
-
-    //     String transactionIdStatus = checkTransactionIdStatus(transactionId);
-
-    //     if (!"SUCCESS".equals(transactionIdStatus)) {
-    //         response.put("valid", false);
-    //         response.put("message", "Error: No VP submission found for given transaction ID " + transactionIdStatus);
-    //         return response;
-    //     }
-
-    //     response.put("valid", true);
-    //     response.put("message", "VP TOKEN Verification successful");
-    //     return response;
-
-    // }
 
     @Override
     public Map<String, Object> verifyInjiAppResult(String requestId, String transactionId) {
@@ -383,15 +353,15 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
         return sis.getSessionId(CdiUtil.bean(HttpServletRequest.class));
     }   
     
-    private static String generateNonce(int length) {
-        SecureRandom rnd = new SecureRandom();
-        StringBuilder sb = new StringBuilder(length);
-        String chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-        for (int i = 0; i < length; i++) {
-            sb.append(chars.charAt(rnd.nextInt(chars.length())));
-        }
-        return sb.toString();
-    }    
+    // private static String generateNonce(int length) {
+    //     SecureRandom rnd = new SecureRandom();
+    //     StringBuilder sb = new StringBuilder(length);
+    //     String chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    //     for (int i = 0; i < length; i++) {
+    //         sb.append(chars.charAt(rnd.nextInt(chars.length())));
+    //     }
+    //     return sb.toString();
+    // }    
 
     private HashMap<String, Object> getPresentationDefinitionSample(){
 
@@ -546,7 +516,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             }
         }
 
-        LogUtils.log("No user info found from VC");
+        LogUtils.log("Error: No user info found from VC");
         return null;
         // return addAsNewUser(APP_USER_MAIL, DISPLAY_NAME);
     }
