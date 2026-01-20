@@ -20,6 +20,7 @@
             "com.gluu.agama.inji.verifyCredential": {
                 "injiWebBaseURL": "https://injiweb.collab.mosip.net",
                 "injiVerifyBaseURL": "https://injiverify.collab.mosip.net",
+                "agamaCallBackUrl": "https://mmrraju-promoted-macaque.gluu.info/jans-auth/fl/callback",
                 "clientId": "agama-app",
                 "presentationDefinition": {
                     "id": "c4822b58-7fb4-454e-b827-f8758fe27f9a",
