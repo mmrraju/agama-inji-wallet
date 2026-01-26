@@ -32,7 +32,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
-import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.net.URI;
 import java.time.Instant;
@@ -42,7 +41,9 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.io.*;
-import java.sql.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.sql.Timestamp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -560,7 +561,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             return null;
         }
         LocalDate localDate = LocalDate.parse(dob.replace('/', '-')); // parses yyyy-MM-dd
-        return Date.valueOf(localDate);
+        return Timestamp.valueOf(localDate);
     }
 
     private static User getUser(String attributeName, String value) {
