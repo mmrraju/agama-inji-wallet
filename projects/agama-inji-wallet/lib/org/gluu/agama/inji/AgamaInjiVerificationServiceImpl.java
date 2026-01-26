@@ -552,14 +552,16 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
         return vcValue.toString();
     }
 
-    private Timestamp parseBirthdate(String dob) {
+    private String parseBirthdate(String dob) {
         if (dob == null || dob.isBlank()) {
             return null;
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy[-/][MM][- /][dd]");
+
+        DateTimeFormatter formatter =
+            DateTimeFormatter.ofPattern("yyyy[-/][MM][- /][dd]");
 
         LocalDate localDate = LocalDate.parse(dob, formatter);
-        return Timestamp.valueOf(localDate.atStartOfDay());
+        return localDate.toString(); // yyyy-MM-dd
     }
 
     private static User getUser(String attributeName, String value) {
