@@ -35,6 +35,8 @@ import java.security.SecureRandom;
 import java.text.MessageFormat;
 import java.net.URI;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.io.*;
@@ -432,7 +434,12 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
                     String normalizedValue = extractVcValue(vcValue);
 
                     if (normalizedValue != null) {
-                        gluuAttrs.put(gluuAttrName, normalizedValue);
+                        // gluuAttrs.put(gluuAttrName, normalizedValue);
+                        if ("birthdate".equals(gluuAttrName)) {
+                            gluuAttrs.put(gluuAttrName, parseBirthdate(normalizedValue));
+                        } else {
+                            gluuAttrs.put(gluuAttrName, normalizedValue);
+                        }
                     }
                 }
             }
@@ -545,10 +552,21 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
         return vcValue.toString();
     }
 
+    private Timestamp parseBirthdate(String dob) {
+        if (dob == null || dob.isBlank()) {
+            return null;
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy[-/][MM][- /][dd]");
+
+        LocalDate localDate = LocalDate.parse(dob, formatter);
+        return Timestamp.valueOf(localDate.atStartOfDay());
+    }
+
     private static User getUser(String attributeName, String value) {
         UserService userService = CdiUtil.bean(UserService.class);
         return userService.getUserByAttribute(attributeName, value, true);
-    }    
+    }   
+
     private String getSingleValuedAttr(User user, String attribute) {
 
         Object value = null;
