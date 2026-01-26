@@ -558,21 +558,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             return null;
         }
 
-        // Try multiple patterns for input
-        String[] patterns = {"yyyy-MM-dd", "yyyy/MM/dd"};
-
-        for (String pattern : patterns) {
-            try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
-                LocalDate localDate = LocalDate.parse(dob, formatter);
-                return localDate.toString(); // Always returns yyyy-MM-dd
-            } catch (DateTimeParseException e) {
-                // Ignore and try the next pattern
-            }
-        }
-
-        // If none of the patterns worked
-        throw new IllegalArgumentException("Unable to parse date: " + dob);
+        return dob.replace('/', '-');
     }
 
     private static User getUser(String attributeName, String value) {
