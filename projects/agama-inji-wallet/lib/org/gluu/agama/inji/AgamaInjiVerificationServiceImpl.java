@@ -438,12 +438,12 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
                     String normalizedValue = extractVcValue(vcValue);
 
                     if (normalizedValue != null) {
-                        // gluuAttrs.put(gluuAttrName, normalizedValue);
-                        if ("birthdate".equals(gluuAttrName)) {
-                            gluuAttrs.put(gluuAttrName, parseBirthdate(normalizedValue));
-                        } else {
-                            gluuAttrs.put(gluuAttrName, normalizedValue);
-                        }
+                        gluuAttrs.put(gluuAttrName, normalizedValue);
+                        // if ("birthdate".equals(gluuAttrName)) {
+                        //     gluuAttrs.put(gluuAttrName, parseBirthdate(normalizedValue));
+                        // } else {
+                        //     gluuAttrs.put(gluuAttrName, normalizedValue);
+                        // }
                     }
                 }
             }
@@ -505,8 +505,13 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             String attrValue = entry.getValue();
 
             if (UID.equals(attrName)) continue;
-
-            newUser.setAttribute(attrName, attrValue);
+            if("birthdate".equals(attrName)){
+                LocalDate localDate = LocalDate.parse(attrValue.replace('/', '-')); // parses yyyy-MM-dd
+                newUser.setAttribute(attrName, Timestamp.valueOf(localDate));
+            }else{
+                newUser.setAttribute(attrName, attrValue);
+            }
+            
         }
 
         UserService userService = CdiUtil.bean(UserService.class);
@@ -556,12 +561,13 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
         return vcValue.toString();
     }
 
-    private Timestamp parseBirthdate(String dob) {
+    private String parseBirthdate(String dob) {
         if (dob == null || dob.isBlank()) {
             return null;
         }
-        LocalDate localDate = LocalDate.parse(dob.replace('/', '-')); // parses yyyy-MM-dd
-        return Timestamp.valueOf(localDate);
+        return dob.replace('/', '-');
+        // LocalDate localDate = LocalDate.parse(dob.replace('/', '-')); // parses yyyy-MM-dd
+        // return Timestamp.valueOf(localDate);
     }
 
     private static User getUser(String attributeName, String value) {
