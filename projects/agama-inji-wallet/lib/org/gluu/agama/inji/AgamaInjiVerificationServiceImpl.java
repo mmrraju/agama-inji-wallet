@@ -507,7 +507,8 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             if (UID.equals(attrName)) continue;
             if("birthdate".equals(attrName)){
                 LocalDate localDate = LocalDate.parse(attrValue.replace('/', '-')); // parses yyyy-MM-dd
-                newUser.setAttribute(attrName, Timestamp.valueOf(localDate));
+                LocalDateTime localDateTime = localDate.atStartOfDay()
+                newUser.setAttribute(attrName, Timestamp.valueOf(localDateTime));
             }else{
                 newUser.setAttribute(attrName, attrValue);
             }
