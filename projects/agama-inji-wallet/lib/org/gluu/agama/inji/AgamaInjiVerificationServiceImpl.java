@@ -37,6 +37,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.io.*;
@@ -494,7 +495,7 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
 
         User newUser = new User();
         String uid = email.substring(0, email.indexOf("@"));
-
+        newUser.setAttribute(UID, uid);
         // Set all attributes from gluuAttrs dynamically
         for (Map.Entry<String, String> entry : gluuAttrs.entrySet()) {
             String attrName = entry.getKey();
@@ -557,11 +558,21 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             return null;
         }
 
-        DateTimeFormatter formatter =
-            DateTimeFormatter.ofPattern("yyyy[-/][MM][- /][dd]");
+        // Try multiple patterns for input
+        String[] patterns = {"yyyy-MM-dd", "yyyy/MM/dd"};
 
-        LocalDate localDate = LocalDate.parse(dob, formatter);
-        return localDate.toString(); // yyyy-MM-dd
+        for (String pattern : patterns) {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+                LocalDate localDate = LocalDate.parse(dob, formatter);
+                return localDate.toString(); // Always returns yyyy-MM-dd
+            } catch (DateTimeParseException e) {
+                // Ignore and try the next pattern
+            }
+        }
+
+        // If none of the patterns worked
+        throw new IllegalArgumentException("Unable to parse date: " + dob);
     }
 
     private static User getUser(String attributeName, String value) {
