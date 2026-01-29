@@ -488,52 +488,50 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
                     givenName = email.substring(0, email.indexOf("@"));
                 }
             }
+            Map<String, String> result = new HashMap<>(gluuAttrs);
+            result.put(UID, uid);
+            result.put(INUM_ATTR, inum);
+            result.put(MAIL, email);
+            result.put(DISPLAY_NAME, displayName);
+            return result;
 
-            return Map.of(
-                UID, uid,
-                INUM_ATTR, inum,
-                "givenName", givenName,
-                "mail", email,
-                "displayName",displayName
-            );
-        }
+        }else{
+            User newUser = new User();
+            String uid = email.substring(0, email.indexOf("@"));
+            newUser.setAttribute(UID, uid);
+            // Set all attributes from gluuAttrs dynamically
+            for (Map.Entry<String, String> entry : gluuAttrs.entrySet()) {
+                String attrName = entry.getKey();
+                String attrValue = entry.getValue();
 
-        User newUser = new User();
-        String uid = email.substring(0, email.indexOf("@"));
-        newUser.setAttribute(UID, uid);
-        // Set all attributes from gluuAttrs dynamically
-        for (Map.Entry<String, String> entry : gluuAttrs.entrySet()) {
-            String attrName = entry.getKey();
-            String attrValue = entry.getValue();
-
-            if (UID.equals(attrName)) continue;
-            if("birthdate".equals(attrName)){
-                LocalDate localDate = LocalDate.parse(attrValue.replace('/', '-')); // parses yyyy-MM-dd
-                LocalDateTime localDateTime = localDate.atStartOfDay()
-                newUser.setAttribute(attrName, Timestamp.valueOf(localDateTime));
-            }else{
-                newUser.setAttribute(attrName, attrValue);
+                if (UID.equals(attrName)) continue;
+                if("birthdate".equals(attrName)){
+                    LocalDate localDate = LocalDate.parse(attrValue.replace('/', '-')); // parses yyyy-MM-dd
+                    LocalDateTime localDateTime = localDate.atStartOfDay();
+                    newUser.setAttribute(attrName, Timestamp.valueOf(localDateTime));
+                }else{
+                    newUser.setAttribute(attrName, attrValue);
+                }
+                
             }
-            
+
+            UserService userService = CdiUtil.bean(UserService.class);
+            newUser = userService.addUser(newUser, true);
+
+            if (newUser == null) {
+                LogUtils.log("Error: Added user not found");
+                return Collections.emptyMap();
+            }
+
+            LogUtils.log("New user added: %", email);
+        
+            String inum = getSingleValuedAttr(newUser, INUM_ATTR);
+
+            Map<String, String> result = new HashMap<>(gluuAttrs);
+            result.put(UID, uid);
+            result.put(INUM_ATTR, inum);
+            return result;
         }
-
-        UserService userService = CdiUtil.bean(UserService.class);
-        newUser = userService.addUser(newUser, true);
-
-        if (newUser == null) {
-            LogUtils.log("Error: Added user not found");
-            return Collections.emptyMap();
-        }
-
-        LogUtils.log("New user added: %", email);
-
-        String inum = getSingleValuedAttr(newUser, INUM_ATTR);
-
-        Map<String, String> result = new HashMap<>(gluuAttrs);
-        result.put(UID, uid);
-        result.put(INUM_ATTR, inum);
-
-        return result;
     }
 
     private String extractVcValue(Object vcValue) {
