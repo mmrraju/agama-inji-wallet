@@ -480,19 +480,21 @@ public class AgamaInjiVerificationServiceImpl extends AgamaInjiVerificationServi
             String uid = getSingleValuedAttr(user, UID);
             String inum = getSingleValuedAttr(user, INUM_ATTR);
 
-            String name = getSingleValuedAttr(user, GIVEN_NAME);
-            if (name == null) {
-                name = getSingleValuedAttr(user, DISPLAY_NAME);
-                if (name == null) {
-                    name = email.substring(0, email.indexOf("@"));
+            String displayName = getSingleValuedAttr(user, DISPLAY_NAME);
+            String givenName = getSingleValuedAttr(user, GIVEN_NAME);
+            if (givenName == null) {
+                givenName = displayName;
+                if (givenName == null) {
+                    givenName = email.substring(0, email.indexOf("@"));
                 }
             }
 
             return Map.of(
                 UID, uid,
                 INUM_ATTR, inum,
-                "name", name,
-                "email", email
+                "givenName", givenName,
+                "mail", email,
+                "displayName",displayName
             );
         }
 
